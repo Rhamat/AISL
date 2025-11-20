@@ -18,7 +18,7 @@ Most importantly, AISL eliminates hallucination entirely. Because every field is
 
 **Current Status**: This is version 1.0, which is suitable for evaluation and testing. We are currently assessing developer feedback and community adoption. Known limitations exist in this version and will be addressed in subsequent releases. We welcome experimentation and feedback as we refine the format based on real-world usage.
 
-JSON TO AISL CONVERTER - 
+JSON TO AISL CONVERTER - https://aisl-web.github.io/AISL
 
 **Core Goals:**
 - 75-85% token reduction vs JSON
@@ -508,7 +508,7 @@ A: Check GitHub issues, read AISL.md technical docs, or ask community.
 
 - **AISL.md** - Complete technical specification and detailed examples
 - **GitHub Issues** - Report bugs, request features, ask questions
-- **Converter Tool** - JSON ↔ AISL conversion at [converter-url]
+- **Converter Tool** - JSON ↔ AISL conversion at (https://aisl-web.github.io/AISL/)
 - **Community** - Discuss and share use cases
 
 ---
