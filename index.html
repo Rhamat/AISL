@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISL Web Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-tertiary: #999999;
+            --border-color: #333333;
+            --success: #4ade80;
+            --error: #ff4444;
+            --code-bg: #0d1117;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        #input-section {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        #output-section {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        #metrics-section {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+
+        #links-section {
+            grid-column: 1 / -1;
+            grid-row: 3;
+        }
+
+        section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            max-height: 200px;
+            padding: 16px;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--text-secondary);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--border-color);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background-color: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #ff6666;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        #metrics-section {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 24px 16px;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .metric-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+            word-break: break-word;
+        }
+
+        .metric-reduction {
+            grid-column: 1 / -1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 32px 20px;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-reduction .metric-label {
+            font-size: 12px;
+        }
+
+        .metric-reduction .metric-value {
+            font-size: 32px;
+            color: var(--text-primary);
+        }
+
+        .output-wrapper {
+            position: relative;
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: var(--text-primary);
+            word-break: break-all;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 8px 12px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+        }
+
+        .copy-button.copied {
+            background-color: var(--bg-primary);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--success);
+            border-radius: 6px;
+            padding: 16px 20px;
+            color: var(--success);
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--text-tertiary);
+            border-top-color: var(--text-primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info-section {
+            background-color: transparent;
+            border: none;
+            padding: 24px;
+            box-shadow: none;
+        }
+
+        .info-section h3 {
+            display: none;
+        }
+
+        .info-grid {
+            display: none;
+        }
+
+        .links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .link-button {
+            padding: 12px 16px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .link-button:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+        }
+
+        footer {
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 100px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-tertiary);
+            padding: 40px 20px;
+            font-size: 14px;
+        }
+
+        .metrics-container {
+            display: none;
+        }
+
+        .metrics-container.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            main {
+                padding: 40px 20px;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            #input-section {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            #output-section {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            #metrics-section {
+                grid-column: 1 / -1;
+                grid-row: 3;
+            }
+
+            #links-section {
+                grid-column: 1 / -1;
+                grid-row: 4;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            main {
+                padding: 20px 12px;
+            }
+
+            section {
+                padding: 16px;
+                border-radius: 6px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            header p {
+                font-size: 12px;
+            }
+
+            textarea {
+                min-height: 150px;
+                font-size: 13px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .metric-card {
+                padding: 12px;
+            }
+
+            .metric-value {
+                font-size: 16px;
+            }
+
+            .metric-reduction .metric-value {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            button {
+                width: 100%;
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .copy-button {
+                position: static;
+                width: 100%;
+                margin-top: 12px;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .code-block {
+                font-size: 12px;
+                padding: 12px;
+                min-height: 80px;
+            }
+
+            .links {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .link-button {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .toast {
+                bottom: 12px;
+                right: 12px;
+                left: 12px;
+                font-size: 12px;
+                padding: 12px 16px;
+            }
+
+            label {
+                font-size: 11px;
+            }
+
+            section h2 {
+                font-size: 18px;
+                margin-bottom: 16px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            main {
+                padding: 16px 8px;
+            }
+
+            header {
+                padding: 12px 8px;
+            }
+
+            header h1 {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+
+            header p {
+                font-size: 11px;
+            }
+
+            section {
+                padding: 12px;
+                border-radius: 4px;
+                gap: 12px;
+            }
+
+            textarea {
+                min-height: 120px;
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .copy-button {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .metric-card {
+                padding: 10px;
+            }
+
+            .metric-label {
+                font-size: 10px;
+            }
+
+            .metric-value {
+                font-size: 14px;
+            }
+
+            .metric-reduction .metric-value {
+                font-size: 20px;
+            }
+
+            .code-block {
+                font-size: 11px;
+                padding: 10px;
+                min-height: 60px;
+            }
+
+            .link-button {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .toast {
+                padding: 10px 12px;
+                font-size: 11px;
+            }
+
+            footer {
+                padding: 12px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AISL Converter</h1>
+        <p>Convert structured data to AISL format for optimized LLM context</p>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Input Section -->
+            <section id="input-section">
+                <h2>Input Data</h2>
+                <label for="input-textarea">JSON / YAML Input</label>
+                <textarea 
+                    id="input-textarea"
+                    placeholder='Example JSON:
+{
+  "type": "user",
+  "email": "john@example.com",
+  "username": "johndoe",
+  "created_at": "2024-01-15"
+}'
+                    aria-label="JSON or YAML input"></textarea>
+                <div id="error-message" class="error-message" role="alert"></div>
+                <div class="button-group">
+                    <button class="btn-primary" id="convert-btn" aria-label="Convert input to AISL format">
+                        Convert to AISL
+                    </button>
+                    <button class="btn-secondary" id="clear-btn" aria-label="Clear input and output">
+                        Clear
+                    </button>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section id="output-section">
+                <h2>AISL Output</h2>
+                <div class="output-wrapper">
+                    <div id="output-container" class="empty-state">
+                        Click "Convert to AISL" to see the output
+                    </div>
+                    <button class="copy-button" id="copy-btn" aria-label="Copy output to clipboard" style="display: none;">
+                        Copy
+                    </button>
+                </div>
+            </section>
+
+            <!-- Metrics Section -->
+            <section id="metrics-section" class="metrics-container">
+                <h2>Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">●</div>
+                        <div class="metric-label">Entity Type</div>
+                        <div class="metric-value" id="entity-type">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">●</div>
+                        <div class="metric-label">Detection Method</div>
+                        <div class="metric-value" id="detection-method" style="font-size: 12px;">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">●</div>
+                        <div class="metric-label">Original Tokens</div>
+                        <div class="metric-value" id="original-tokens">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">●</div>
+                        <div class="metric-label">AISL Tokens</div>
+                        <div class="metric-value" id="aisl-tokens">-</div>
+                    </div>
+                    <div class="metric-card metric-reduction">
+                        <div class="metric-label">Token Reduction</div>
+                        <div class="metric-value" id="reduction-percentage">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Section -->
+            <section class="info-section" id="links-section">
+                <div class="links">
+                    <a href="https://github.com/aisl-web/AISL" class="link-button" target="_blank" rel="noopener noreferrer">
+                        Documentation
+                    </a>
+                    <a href="https://aisl-do0x.onrender.com" class="link-button" target="_blank" rel="noopener noreferrer">
+                        API
+                    </a>
+                    <a href="https://github.com/aisl-web/AISL" class="link-button" target="_blank" rel="noopener noreferrer">
+                        GitHub
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 AISL Converter. All rights reserved.</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const API_URL = 'https://aisl-do0x.onrender.com/api/convert';
+        const VALIDATION_DEBOUNCE = 500;
+
+        const elements = {
+            inputTextarea: document.getElementById('input-textarea'),
+            convertBtn: document.getElementById('convert-btn'),
+            clearBtn: document.getElementById('clear-btn'),
+            outputContainer: document.getElementById('output-container'),
+            copyBtn: document.getElementById('copy-btn'),
+            errorMessage: document.getElementById('error-message'),
+            toast: document.getElementById('toast'),
+            metricsSection: document.getElementById('metrics-section'),
+            entityType: document.getElementById('entity-type'),
+            detectionMethod: document.getElementById('detection-method'),
+            originalTokens: document.getElementById('original-tokens'),
+            aislTokens: document.getElementById('aisl-tokens'),
+            reductionPercentage: document.getElementById('reduction-percentage'),
+        };
+
+        let validationTimeout;
+        let lastOutput = '';
+
+        // Try to load saved input from localStorage
+        function loadSavedInput() {
+            try {
+                const saved = localStorage.getItem('aisl_input');
+                if (saved) {
+                    elements.inputTextarea.value = saved;
+                }
+            } catch (e) {
+                console.log('localStorage not available');
+            }
+        }
+
+        // Save input to localStorage
+        function saveInput() {
+            try {
+                localStorage.setItem('aisl_input', elements.inputTextarea.value);
+            } catch (e) {
+                console.log('localStorage not available');
+            }
+        }
+
+        // Validate JSON/YAML format
+        function isValidJson(str) {
+            try {
+                JSON.parse(str);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Simple YAML check
+        function isValidYaml(str) {
+            // Basic check - if it has colons and newlines, might be YAML
+            // For now, just accept it if it's not JSON
+            return str.trim().length > 0;
+        }
+
+        // Validate input with debounce
+        function validateInput() {
+            clearTimeout(validationTimeout);
+            const input = elements.inputTextarea.value.trim();
+
+            if (!input) {
+                hideError();
+                return;
+            }
+
+            validationTimeout = setTimeout(() => {
+                if (!isValidJson(input)) {
+                    showError('Invalid JSON format. Please check your syntax.');
+                } else {
+                    hideError();
+                }
+            }, VALIDATION_DEBOUNCE);
+        }
+
+        // Show error message
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.classList.add('show');
+        }
+
+        // Hide error message
+        function hideError() {
+            elements.errorMessage.classList.remove('show');
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            elements.toast.textContent = message;
+            elements.toast.classList.add('show');
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Format AISL output with basic syntax highlighting
+        function formatAislOutput(aisl) {
+            // Create a code block with the AISL output
+            return `<div class="code-block">${escapeHtml(aisl)}</div>`;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Update metrics display
+        function updateMetrics(data) {
+            elements.entityType.textContent = data.entity_type || '-';
+            elements.detectionMethod.textContent = data.entity_type_method || '-';
+            elements.originalTokens.textContent = data.tokens_original || '-';
+            elements.aislTokens.textContent = data.tokens_aisl || '-';
+            
+            if (data.reduction_percent !== undefined) {
+                elements.reductionPercentage.textContent = `${data.reduction_percent.toFixed(1)}%`;
+            } else if (data.reduction) {
+                elements.reductionPercentage.textContent = data.reduction;
+            } else {
+                elements.reductionPercentage.textContent = '-';
+            }
+
+            elements.metricsSection.classList.add('show');
+        }
+
+        // Clear metrics display
+        function clearMetrics() {
+            elements.entityType.textContent = '-';
+            elements.detectionMethod.textContent = '-';
+            elements.originalTokens.textContent = '-';
+            elements.aislTokens.textContent = '-';
+            elements.reductionPercentage.textContent = '-';
+            elements.metricsSection.classList.remove('show');
+        }
+
+        // Convert to AISL
+        async function convert() {
+            const input = elements.inputTextarea.value.trim();
+
+            if (!input) {
+                showError('Please enter JSON or YAML data.');
+                return;
+            }
+
+            if (!isValidJson(input)) {
+                showError('Invalid JSON format. Please check your syntax.');
+                return;
+            }
+
+            hideError();
+            elements.convertBtn.disabled = true;
+            elements.outputContainer.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><span>Converting...</span></div>';
+            elements.copyBtn.style.display = 'none';
+
+            try {
+                const parsedData = JSON.parse(input);
+                console.log('Sending to API:', parsedData);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input: parsedData }),
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || `API error: ${response.status}`);
+                }
+
+                if (data.aisl) {
+                    lastOutput = data.aisl;
+                    elements.outputContainer.innerHTML = formatAislOutput(data.aisl);
+                    elements.copyBtn.style.display = 'block';
+                    elements.copyBtn.classList.remove('copied');
+                    updateMetrics(data);
+                    saveInput();
+                } else {
+                    throw new Error(data.error || 'No AISL output received');
+                }
+            } catch (error) {
+                console.error('Conversion error:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    showError('Unable to connect to API. Please try again.');
+                } else {
+                    showError(`Error: ${error.message}`);
+                }
+                elements.outputContainer.innerHTML = '<div class="empty-state">Conversion failed. Please try again.</div>';
+                elements.copyBtn.style.display = 'none';
+            } finally {
+                elements.convertBtn.disabled = false;
+            }
+        }
+
+        // Copy to clipboard
+        async function copyToClipboard() {
+            if (!lastOutput) return;
+
+            try {
+                await navigator.clipboard.writeText(lastOutput);
+                showToast('Copied to clipboard');
+                elements.copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    elements.copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Copy failed:', err);
+                showToast('Copy failed. Please try again.');
+            }
+        }
+
+        // Clear input and output
+        function clear() {
+            elements.inputTextarea.value = '';
+            elements.outputContainer.innerHTML = '<div class="empty-state">Click "Convert to AISL" to see the output</div>';
+            elements.copyBtn.style.display = 'none';
+            clearMetrics();
+            hideError();
+            lastOutput = '';
+            saveInput();
+        }
+
+        // Event listeners
+        elements.inputTextarea.addEventListener('input', () => {
+            validateInput();
+            saveInput();
+        });
+
+        elements.convertBtn.addEventListener('click', convert);
+        elements.clearBtn.addEventListener('click', clear);
+        elements.copyBtn.addEventListener('click', copyToClipboard);
+
+        // Allow Enter+Cmd/Ctrl to convert
+        elements.inputTextarea.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                convert();
+            }
+        });
+
+        // Load saved input on page load
+        loadSavedInput();
+    </script>
+</body>
+</html>
