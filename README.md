@@ -1,532 +1,440 @@
-# AISL v1 - AI-Native Semantic Language
+# AISL — Artificial Intelligence Serialization Language
 
-**A compact, token-efficient data format optimized for AI comprehension and LLM processing.**
+> A token-efficient, AI-native data serialization format designed for machine consumption.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)]()
+
+---
 
 ## What is AISL?
 
-AISL is a minimal-syntax data format designed specifically for how AI systems process data. Unlike JSON (designed for JavaScript) or XML (designed for browsers), AISL eliminates structural overhead while maintaining 100% semantic clarity.
+**AISL (Artificial Intelligence Serialization Language)** is a serialization format purpose-built for AI systems. Unlike JSON, YAML, or XML—which prioritize human readability—AISL optimizes for token efficiency and deterministic parsing by large language models.
 
-## Introduction
+### Core Principles
 
-AISL is a data format designed specifically for AI comprehension, not for human consumption. Just as HTML is optimized for browser rendering and not meant for manual reading, AISL is optimized for LLM parsing and not intended for human interpretation.
-
-This format offers more than just token efficiency. While AISL achieves 33-50% average token reduction compared to JSON, its fundamental advantage lies in explicit semantic encoding. When an AI system reads AISL, it encounters unambiguous structural intent rather than probabilistic patterns. This explicit semantic clarity enables deterministic parsing without hallucination.
-
-During AI analysis, if processing is interrupted, the system can resume from the exact point of interruption rather than restarting from the beginning. The structured format preserves context continuity that other formats cannot match.
-
-Most importantly, AISL eliminates hallucination entirely. Because every field is self-describing and every relationship is explicit, the AI has no need to guess or interpolate. The data is the truth—not an approximation or probability distribution.
-
-**Current Status**: This is version 1.0, which is suitable for evaluation and testing. We are currently assessing developer feedback and community adoption. Known limitations exist in this version and will be addressed in subsequent releases. We welcome experimentation and feedback as we refine the format based on real-world usage.
-
-JSON TO AISL CONVERTER - https://aisl-web.github.io/AISL
-
-**Core Goals:**
-- 75-85% token reduction vs JSON
-- Explicit semantic meaning (zero hallucination)
-- Simple, readable, debuggable syntax
-- Designed for LLM context optimization
+- **Token-efficient**: Eliminates quotes, braces, and redundant syntax that consume tokens without adding semantic value.
+- **Human-optional**: Optimized for AI consumption; human readability is a secondary concern.
+- **Flattened hierarchy**: Represents nested structures as dot-notation key paths (`contact.address.city`).
+- **Linear structure**: Each record is a single logical unit with optional multi-line continuation.
+- **Deterministic parsing**: Predictable syntax reduces hallucination risk and parsing errors.
+- **Lossless conversion**: Any AISL document can be converted back to JSON without data loss.
 
 ---
 
-## Why AISL Matters
+## Motivation
 
-### The Problem
-```
-JSON Processing:
-- 58% of tokens spent on structure (braces, quotes, colons)
-- 42% of tokens for actual data
-- Result: LLMs waste processing capacity parsing format
-```
+### The Problem with Existing Formats
 
-### The Solution
-```
-AISL Processing:
-- 29% of tokens spent on structure
-- 71% of tokens for actual data
-- Result: 70% more capacity for reasoning
-```
+Modern AI systems process structured data constantly—API responses, configuration files, database records, and more. The formats we use today were designed decades ago for human developers:
 
-### Measurable Impact
-| Metric | JSON | AISL | Improvement |
-|--------|------|------|-------------|
-| Token Reduction | - | -81% | Lower costs |
-| Hallucination Rate | 13% | 4% | **69% fewer errors** |
-| Data Extraction Accuracy | 76% | 98% | **+22 points** |
-| Cost per 1M Records | $24.50 | $4.50 | **$20 savings** |
-| Processing Speed | Baseline | 60-75% faster | **Faster inference** |
+| Format | Primary Design Goal |
+|--------|---------------------|
+| JSON   | Human-readable data interchange |
+| YAML   | Human-friendly configuration |
+| XML    | Document markup with extensibility |
+| TOML   | Human-readable configuration |
+
+These formats introduce inefficiencies when consumed by AI:
+
+1. **Repeated structural tokens**: Every `{`, `}`, `[`, `]`, and `"` consumes tokens without semantic value.
+2. **Redundant key repetition**: In arrays of objects, the same keys appear repeatedly.
+3. **Whitespace and indentation**: Formatting for humans wastes context window space.
+4. **Ambiguous nesting**: Deep hierarchies increase parsing complexity and hallucination risk.
+5. **Irregular structure**: Mixed types and optional fields confuse pattern recognition.
+
+### The AISL Solution
+
+AISL addresses these issues by:
+
+- Linearizing hierarchical data into flat key-value pairs
+- Using minimal delimiters (`|`, `%`, `~`)
+- Eliminating quotes around strings by default
+- Providing optional type hints for unambiguous parsing
+- Creating predictable, scannable record structures
+
+The result: **fewer tokens, clearer structure, more reliable AI processing**.
 
 ---
 
-## AISL Syntax - Developer Guide
+## Key Features
 
-### Basic Format
+### Token Efficiency
+
+AISL removes syntactic overhead that provides no semantic value to AI systems:
 
 ```
-type:id|key=value|key=value|key=value
+# JSON (43 tokens typical)
+{"user": {"name": "Alice", "age": 32, "active": true}}
+
+# AISL (approximately 15 tokens)
+record:user|name=Alice|age:int=32|active:bool=true%
 ```
 
-**Components:**
-- `type` - Entity type (user, product, order, post, config, event, team, document)
-- `id` - Unique identifier
-- `|` - Field delimiter (pipe character)
-- `key=value` - Standard key-value pairs
+### Flattened Hierarchy
 
-### Example: User Record
+Nested structures become dot-notation paths:
 
-**JSON (89 tokens):**
+```
+# Instead of nested objects:
+contact.address.street=123 Main St|contact.address.city=Boston|contact.address.zip=02101%
+```
+
+### Delimiters
+
+| Symbol | Purpose | Example |
+|--------|---------|---------|
+| `\|`   | Field separator | `name=Alice\|age=32` |
+| `%`    | Record terminator | `...active=true%` |
+| `~`    | Array element marker | `tags~python\|tags~ai` |
+| `\`    | Line continuation | `name=Alice \` (continues next line) |
+| `.`    | Hierarchy separator | `user.contact.email` |
+
+### Optional Type Hints
+
+Explicit types eliminate ambiguity:
+
+| Hint | Meaning | Example |
+|------|---------|---------|
+| `:int` | Integer | `age:int=32` |
+| `:float` | Floating point | `price:float=19.99` |
+| `:bool` | Boolean | `active:bool=true` |
+| `:str` | String (explicit) | `code:str=007` |
+| `:null` | Null value | `deleted:null=` |
+
+### Deterministic Parsing
+
+Every AISL document has exactly one valid interpretation. There are no optional commas, no flexible whitespace rules, and no ambiguous type coercion. This predictability reduces AI hallucinations and missing-field errors.
+
+---
+
+## Syntax Reference
+
+### Single-Line Record
+
+The most common pattern—a complete record on one line:
+
+```
+record:user-001|name=Alice|age:int=32|status=active%
+```
+
+**Structure:**
+- `record:user-001` — Record identifier (optional but recommended)
+- `|` — Field separator
+- `key=value` — Field assignment
+- `%` — Record terminator
+
+### Multi-Line Record
+
+For records with many fields, use line continuation:
+
+```
+record:user-001\
+  name=Alice Johnson\
+  age:int=32\
+  contact.email=alice@example.com\
+  contact.phone=555-0123\
+  preferences.theme=dark\
+  preferences.notifications:bool=true%
+```
+
+The `\` at line end indicates continuation. The record terminates at `%`.
+
+### Arrays
+
+Use the `~` operator to denote array membership:
+
+```
+record:user-001|name=Alice|emails~alice@personal.com|emails~alice@work.com|emails~alice@school.edu%
+```
+
+This represents:
 ```json
 {
-  "type": "user",
-  "id": 123,
   "name": "Alice",
-  "email": "alice@example.com",
-  "age": 28,
-  "verified": true
+  "emails": ["alice@personal.com", "alice@work.com", "alice@school.edu"]
 }
 ```
 
-**AISL (16 tokens):**
-```
-user:123|name=Alice|email=alice@example.com|age=28|verified=true
-```
+### Nested Arrays
 
-**Token Savings: 82%**
-
----
-
-## Reading AISL Format
-
-### Type Inference Rules
-
-AISL automatically detects data types based on value content:
-
-| Value | Type | Example |
-|-------|------|---------|
-| `true` or `false` | Boolean | `active=true` |
-| `null` | Null | `deleted=null` |
-| `123` (digits only) | Integer | `age=28` |
-| `123.45` (with decimal) | Float | `price=99.99` |
-| Anything else | String | `name=Alice` |
-
-**Key Rule:** No quotes needed. Type is determined by content.
-
-### Hierarchical Data (Dot Notation)
-
-Nested structures use dot notation with dots as namespace separators:
+Combine dot-notation with array markers:
 
 ```
-user:123|name=Alice|address.city=Boston|address.zip=02101|contact.email=alice@example.com
+record:order-500\
+  items~0.product=Widget\
+  items~0.qty:int=2\
+  items~0.price:float=9.99\
+  items~1.product=Gadget\
+  items~1.qty:int=1\
+  items~1.price:float=24.99%
 ```
 
-**Equivalent JSON:**
-```json
-{
-  "type": "user",
-  "id": 123,
-  "name": "Alice",
-  "address": {
-    "city": "Boston",
-    "zip": "02101"
-  },
-  "contact": {
-    "email": "alice@example.com"
-  }
-}
-```
-
-**How to read:**
-- `address.city` = navigate to `address` object, then `city` field
-- `contact.email` = navigate to `contact` object, then `email` field
-- Unlimited nesting depth: `a.b.c.d.e=value` works perfectly
-
-### Multiple Records (Line-Delimited)
-
-Each line is a complete, independent record:
+### Empty and Null Values
 
 ```
-user:1|name=Alice|age=28|verified=true
-user:2|name=Bob|age=35|verified=true
-user:3|name=Charlie|age=42|verified=false
+middle_name=|deleted_at:null=%
 ```
 
-Perfect for streaming, batch processing, or log aggregation. No array syntax needed.
+- `middle_name=` — Empty string
+- `deleted_at:null=` — Explicit null
 
-### Special Characters & Encoding
+### Special Characters
 
-| Character | Encoding | Example |
-|-----------|----------|---------|
-| Pipe `\|` | `%7C` | `message=Hello%7CWorld` |
-| Equals `=` | `%3D` | `formula=x%3D5%2B3` |
-| Space | Allowed | `name=John Doe` |
-| Underscore | Allowed | `first_name=John` |
-| Dash | Allowed | `created-at=2025-11-20` |
-| @ Symbol | Allowed | `seller=@company-123` |
-
----
-
-## Practical Examples
-
-### E-Commerce Product
+If values contain delimiters, use explicit string type:
 
 ```
-product:PROD-001|name=Wireless Headphones|description=Premium noise-canceling|price=199.99|in_stock=true|stock=250|category=electronics|rating.avg=4.7|rating.count=1523|seller=@company-123
-```
-
-**Analysis:**
-- `product:PROD-001` - Entity type and ID
-- `price=199.99` - Auto-detected as float
-- `in_stock=true` - Auto-detected as boolean
-- `rating.avg=4.7` - Nested object using dot notation
-- `seller=@company-123` - Reference to another entity
-
-### API Response (Multiple Records)
-
-```
-status:200|message=success|timestamp=2025-11-20T16:45:21Z|request_id=req-001
-
-user:123|name=Alice|email=alice@example.com|verified=true
-user:124|name=Bob|email=bob@example.com|verified=false
-user:125|name=Charlie|email=charlie@example.com|verified=true
-```
-
-### Configuration File
-
-```
-config:app|server.host=0.0.0.0|server.port=8080|server.ssl=true|database.engine=postgresql|database.host=db.example.com|database.pool.min=5|database.pool.max=20|cache.ttl_secs=3600
-```
-
-### Event Log Stream
-
-```
-event:EVT-001|timestamp=2025-11-20T14:30:00Z|user_id=123|action=login|status=success
-event:EVT-002|timestamp=2025-11-20T14:35:23Z|user_id=123|action=purchase|status=success|amount=99.99
-event:EVT-003|timestamp=2025-11-20T14:40:15Z|user_id=123|action=logout|status=success
+bio:str=Works at Acme | Loves coding%
 ```
 
 ---
 
-## Syntax Rules Summary
+## Format Comparison
 
-### Valid AISL
+| Aspect | JSON | YAML | XML | TOML | AISL |
+|--------|------|------|-----|------|------|
+| **Primary audience** | Humans | Humans | Documents | Humans | AI |
+| **Verbosity** | Medium | Low | High | Low | Very Low |
+| **Token efficiency** | Poor | Medium | Very Poor | Medium | Excellent |
+| **Nested data** | Native | Native | Native | Limited | Flattened |
+| **Schema support** | External | External | XSD/DTD | Native types | Type hints |
+| **Human readability** | Good | Excellent | Fair | Excellent | Minimal |
+| **AI parse reliability** | Good | Poor | Fair | Good | Excellent |
+| **Whitespace sensitive** | No | Yes | No | No | No |
 
-```
-user:123|name=Alice|age=28
-product:001|price=99.99|sale=true
-config:app|db.host=localhost|db.port=5432
-event:1|message=hello world|count=42
-document:1|url=https://example.com|verified=true
-```
+### Token Count Example
 
-### Invalid AISL
+Representing the same data across formats:
 
-```
-user123|name=Alice                    ✗ Missing colon separator
-user:123name=Alice                    ✗ Missing pipe delimiter
-user:123|name=Alice||age=28           ✗ Empty field
-user:123|name="Alice Smith"           ✗ Quotes not needed
-user:123|=value                       ✗ Missing key name
-```
+**Data:** A user with name, email, age, and two tags.
 
----
+| Format | Approximate Tokens (o200k) |
+|--------|---------------------------|
+| XML    | 65-75 |
+| JSON   | 35-42 |
+| YAML   | 28-35 |
+| TOML   | 25-32 |
+| AISL   | 18-24 |
 
-## When to Use AISL
-
-### Perfect For:
-- **AI/LLM Processing** - Primary use case, 81% token reduction
-- **API Microservices** - Internal communication between services
-- **Log Aggregation** - High-volume streaming data
-- **Cache/Storage** - Cost-effective, fast retrieval
-- **Prompt Compression** - Maximize context windows
-- **Batch Processing** - Large datasets to LLMs
-
-### Not Suitable For:
-- **Human Display** - Use JSON or HTML instead
-- **Complex Arrays** - Better in v2 (coming Feb 2026)
-- **Binary Data** - Use base64 encoding only
-- **Legacy Systems** - Integration complexity
-- **Highly Nested Data** - Performance degrades beyond 5 levels
-
-### Recommended Hybrid Approach:
-1. **Store** data in JSON (standard, portable)
-2. **Convert** to AISL before AI processing
-3. **Process** efficiently with AISL
-4. **Convert back** for display/storage
+*Actual savings depend on data shape, key length, and value types.*
 
 ---
 
-## Token Efficiency Breakdown
+## Token Testing
 
-### Real Example: User Profile
+### Measuring Token Efficiency
 
-**Original JSON: 234 tokens**
-```json
-{
-  "type": "user",
-  "id": 12345,
-  "first_name": "Alice",
-  "last_name": "Johnson",
-  "email": "alice@example.com",
-  "phone": "+1-555-1234",
-  "address": {
-    "street": "123 Main St",
-    "city": "Boston",
-    "state": "MA",
-    "zip": "02101"
-  },
-  "verified": true,
-  "created_at": "2025-01-15T10:30:00Z"
-}
+To validate AISL's efficiency for your use case, test with OpenAI's `o200k_base` tokenizer (used by GPT-4o and similar models):
+
+**Using Python:**
+
+```python
+import tiktoken
+
+enc = tiktoken.get_encoding("o200k_base")
+
+json_data = '{"name": "Alice", "age": 32, "active": true}'
+aisl_data = 'record:user|name=Alice|age:int=32|active:bool=true%'
+
+print(f"JSON tokens: {len(enc.encode(json_data))}")
+print(f"AISL tokens: {len(enc.encode(aisl_data))}")
 ```
 
-**AISL Version: 41 tokens**
-```
-user:12345|first_name=Alice|last_name=Johnson|email=alice@example.com|phone=+1-555-1234|address.street=123 Main St|address.city=Boston|address.state=MA|address.zip=02101|verified=true|created_at=2025-01-15T10:30:00Z
+**Using the command line:**
+
+```bash
+# Install tiktoken
+pip install tiktoken
+
+# Compare files
+python -c "
+import tiktoken
+enc = tiktoken.get_encoding('o200k_base')
+with open('data.json') as f: print('JSON:', len(enc.encode(f.read())))
+with open('data.aisl') as f: print('AISL:', len(enc.encode(f.read())))
+"
 ```
 
-**Breakdown:**
-- Removed: `{}[]:"` (structural syntax = 193 tokens)
-- Simplified: Field names once instead of twice
-- Result: **82% token reduction (193 tokens saved)**
+### When AISL May Not Help
 
-**Cost Impact (1M records):**
-- JSON: ~234M tokens × $0.10/1M = $23.40
-- AISL: ~41M tokens × $0.10/1M = $4.10
-- **Savings: $19.30 per million records**
+AISL is optimized for structured records. Token savings may be minimal or negative for:
+
+- Very short, simple values
+- Data with extremely long string values
+- Deeply irregular schemas
+- Single-field records
+
+**The primary goal is AI-friendliness, not token minimization in all cases.**
 
 ---
 
-## Development Best Practices
+## Usage Guide
 
-### 1. Use Semantic Field Names
+JSON TO AISL CONVERTER - https://aisl-web.github.io/AISL/
 
-**Good:**
-```
-product:001|name=Laptop|price_usd=999.99|stock_count=42
-```
+### Supported Data Types
 
-**Avoid:**
-```
-product:001|n=Laptop|p=999.99|s=42
-```
+| Type | AISL Representation | Notes |
+|------|---------------------|-------|
+| String | `key=value` | Default type, no quotes needed |
+| Integer | `key:int=42` | Whole numbers |
+| Float | `key:float=3.14` | Decimal numbers |
+| Boolean | `key:bool=true` | `true` or `false` |
+| Null | `key:null=` | Explicit null value |
+| Array | `key~value` | Multiple entries with same key |
+| Object | `key.subkey=value` | Dot-notation flattening |
 
-### 2. Use Dot Notation for Related Fields
+### Limitations
 
-**Good:**
-```
-user:123|address.street=123 Main|address.city=Boston|address.zip=02101
-```
-
-**Avoid:**
-```
-user:123|address_street=123 Main|address_city=Boston|address_zip=02101
-```
-
-### 3. Keep IDs Meaningful
-
-**Good:**
-```
-user:user-alice-001|name=Alice
-product:prod-laptop-15|name=Laptop Pro
-```
-
-**Avoid:**
-```
-user:123456789|name=Alice
-product:987654321|name=Laptop Pro
-```
-
-### 4. Use References for Relationships
-
-**Good:**
-```
-order:ORD-001|customer=@user-123|items=[@prod-001,@prod-002]|status=pending
-```
-
-**Avoid (data duplication):**
-```
-order:ORD-001|customer.id=user-123|customer.name=Alice|items.0.id=prod-001|items.0.name=Laptop
-```
-
-### 5. Add Comments for Complex Data
-
-```
-# User account created Nov 20, 2025
-user:alice-001|name=Alice|email=alice@example.com|verified=true
-
-# Product listing with inventory
-product:laptop-15|name=Laptop Pro|price_usd=1299.99|stock=42|category=electronics
-```
-
-### 6. Validate Type Consistency
-
-**Good (consistent types):**
-```
-price=99.99
-price=150.00
-price=49.95
-```
-
-**Avoid (inconsistent types):**
-```
-price=99.99
-price=free
-price=contact-us
-```
+- **No comments**: AISL does not support inline comments
+- **No multi-line strings**: Use `\n` escape sequences
+- **Reserved characters**: `|`, `%`, `~`, `\` require escaping in values
+- **Key restrictions**: Keys cannot contain `=`, `.`, or delimiter characters
 
 ---
 
-## Hallucination Reduction: Why AISL Works
+## Specification
 
-### The Science
+### ABNF Grammar (Simplified)
 
-AISL eliminates AI hallucinations through explicit semantic encoding:
-
-| Problem | JSON | AISL | Result |
-|---------|------|------|--------|
-| Field ambiguity | `"price": "99.99"` | `price=99.99` | Explicit |
-| Type uncertainty | Could be string/number | Always clear | No guessing |
-| Structural noise | 58% of tokens | 29% of tokens | More reasoning capacity |
-| Missing fields | `null` or omitted? | Always explicit | Deterministic |
-
-### Measured Results
-
-Testing with GPT-4, Claude 3, Gemini Pro:
-
-- **Hallucination rate:** 13% (JSON) → 4% (AISL) = **69% fewer**
-- **Field identification errors:** 11% → 2% = **82% fewer**
-- **Type inference errors:** 8% → 1% = **87% fewer**
-- **Invented field hallucinations:** 5% → <1% = **95% fewer**
-- **Multi-step reasoning errors:** 18% → 6% = **67% fewer**
-
-### Why This Matters
-
-When processing 1M records with AI:
-- JSON: ~130,000 hallucination errors
-- AISL: ~40,000 hallucination errors
-- **Difference: 90,000 fewer errors**
-
----
-
-## Version 1 Limitations & Roadmap
-
-### Current Limitations (v1.0)
-
-| Limitation | Severity | Workaround | v2 Status |
-|-----------|----------|-----------|-----------|
-| Limited array support | Medium | Use separate records | Native arrays |
-| Only 8 entity types | Medium | Use "document" type | Custom types |
-| No type enforcement | Medium | Validate in app | Schema validation |
-| Large text inefficient | Low | Reference by ID | Compression |
-
-### Planned for v2.0 (Feb 2026)
-
-- First-class array support
-- Custom entity types
-- Schema validation
-- Graph relationships
-- Compression for text
-- Streaming parser
-
-**Backward Compatibility:** All v1 documents parse in v2.
-
----
-
-## Getting Started
-
-### 1. Understand the Syntax
-
-Read examples above. AISL is simple: `type:id|key=value|key=value`
-
-### 2. Try Converting Your Data
-
-Take a JSON file and manually convert to AISL. Compare token counts.
-
-### 3. Measure Impact
-
-Use token counter to measure savings:
-- Typical JSON: 234 tokens
-- Same as AISL: 41 tokens
-- Savings: 82%
-
-### 4. Use in Your Pipeline
-
-```
-JSON (storage) → AISL (AI processing) → JSON (display)
+```abnf
+document     = *record
+record       = [record-id] fields "%"
+record-id    = "record:" identifier "|"
+fields       = field *("|" field)
+field        = key [":" type] "=" value
+key          = identifier *("." identifier)
+type         = "int" / "bool" / "float" / "str" / "null"
+value        = *VCHAR
+identifier   = ALPHA *(ALPHA / DIGIT / "-" / "_")
 ```
 
-### 5. Provide Feedback
+### Escaping Rules
 
-Found issues? Want features? Open a GitHub issue.
+| Character | Escape Sequence |
+|-----------|-----------------|
+| `\|` (pipe) | `\\|` |
+| `%` | `\\%` |
+| `~` | `\\~` |
+| `\` | `\\\\` |
+| Newline | `\\n` |
 
 ---
 
-## Comparison to Other Formats
+## Roadmap
 
-| Feature | JSON | YAML | AISL | Protocol Buffers |
-|---------|------|------|------|------------------|
-| Token Efficient | No | Moderate | **Yes (81%)** | **Yes (90%)** |
-| Human Readable | Moderate | **Yes** | **Yes** | No |
-| Type Safe | Loose | Loose | **Automatic** | **Yes** |
-| Streaming | Hard | Hard | **Easy** | **Yes** |
-| Schema | Optional | Optional | **Built-in** | **Required** |
-| For AI | No | No | **Yes** | Maybe |
+### Version 1.1
+
+- [ ] Improved array syntax for complex nested arrays
+- [ ] Binary data encoding (base64 type hint)
+- [ ] Date/time type hints (`:date`, `:datetime`)
+
+### Version 2.0
+
+- [ ] Schema definition language (AISL-Schema)
+- [ ] Streaming parser for large documents
+- [ ] Compression hints for repeated values
+- [ ] Reference syntax for deduplication
+
+### Tooling
+
+- [ ] Official CLI tool with validation
+- [ ] VSCode extension with syntax highlighting
+- [ ] Language bindings: JavaScript, Go, Rust, Java
+- [ ] JSON Schema to AISL-Schema converter
+- [ ] Online playground and converter
+
+### Integrations
+
+- [ ] OpenAI function calling format support
+- [ ] LangChain document loader
+- [ ] Database export plugins
+
+---
+
+## Contributing
+
+We welcome contributions from the community.
+
+### Reporting Issues
+
+1. Search existing issues to avoid duplicates
+2. Use the issue template
+3. Include minimal reproduction examples
+4. Specify your environment (Python version, OS)
+
+### Proposing Specification Changes
+
+1. Open a discussion in the Ideas category
+2. Provide rationale with token-efficiency analysis
+3. Include before/after examples
+4. Consider backward compatibility
+
+### Code Contributions
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Follow the code style (Black formatting, type hints)
+4. Add tests for new functionality
+5. Update documentation
+6. Submit a pull request
+
+### Style Guidelines for AISL Files
+
+- Use lowercase keys with hyphens for multi-word names
+- Include record identifiers for debugging
+- Group related fields together
+- Use type hints for non-string values
+- One record per logical entity
 
 ---
 
 ## FAQ
 
-**Q: Is AISL a replacement for JSON?**  
-A: No. JSON for storage/APIs, AISL for AI processing. They complement each other.
+**Q: Is AISL meant to replace JSON?**
 
-**Q: Can I convert losslessly?**  
-A: Yes, 100% lossless. JSON ↔ AISL with no data loss.
+No. JSON remains excellent for human-facing APIs and configuration. AISL is designed for AI-to-AI communication and contexts where token efficiency matters.
 
-**Q: Will AISL become a standard?**  
-A: This is v1, experimental. We're gathering feedback before standardization.
+**Q: Can I use AISL for configuration files?**
 
-**Q: Can I parse AISL without tools?**  
-A: Yes. Split by `|`, then by `=`. The spec is simple enough for basic parsing.
+You can, but TOML or YAML may be better choices if humans will edit the files directly.
 
-**Q: How does it handle special characters?**  
-A: Use URL encoding (`%7C` for pipe, `%3D` for equals).
+**Q: How does AISL handle schema validation?**
 
-**Q: Is AISL language-specific?**  
-A: No. Language-agnostic, works everywhere.
+Version 1.0 relies on type hints for basic validation. Full schema support is planned for v2.0.
 
-**Q: What about arrays in v1?**  
-A: Limited. Use separate records instead. Native arrays in v2 (Feb 2026).
+**Q: Is AISL whitespace-sensitive?**
 
-**Q: Can I use AISL in production?**  
-A: Yes, but understand v1 limitations. Many use it in AI pipelines successfully.
-
-**Q: How do I get help?**  
-A: Check GitHub issues, read AISL.md technical docs, or ask community.
+No. Whitespace around delimiters is ignored, except within values.
 
 ---
 
-## Resources
+## License
 
-- **AISL.md** - Complete technical specification and detailed examples
-- **GitHub Issues** - Report bugs, request features, ask questions
-- **Converter Tool** - JSON ↔ AISL conversion at (https://aisl-web.github.io/AISL/)
-- **Community** - Discuss and share use cases
+MIT License
+
+Copyright (c) 2025 AISL Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
-## Summary
-
-**AISL solves real problems:**
-- 81% token reduction = lower costs
-- 69% fewer hallucinations = better AI output
-- 82% accuracy improvement = more reliable results
-- 60-75% faster = quicker processing
-
-**Best for:** AI/LLM processing, microservices, log streaming, cost optimization
-
-**Try it:** Convert one dataset, measure savings, integrate into your pipeline.
-
----
-
-**AISL v1.0 | November 2025 | Status: Available for Community Feedback**
-
-Maintained by [@aisl-web](https://github.com/aisl-web)
+<p align="center">
+  <strong>AISL</strong> — Data serialization for the age of AI.
+</p>
